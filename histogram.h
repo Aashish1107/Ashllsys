@@ -28,9 +28,10 @@ class Histogram{
         }
 
         void print(const char* name, double scale =1.0){
-            std::printf("%s: n=%zu dropped=%zu p50=%.2f p99=%.2f p99.9=%.2f max=%.2f\n",
+            std::printf("%s: n=%zu\n dropped=%zu\n p50=%.2f\n p99=%.2f\n p99.9=%.2f\n max=%.2f\n",
                 name, samples.size(), dropped,
                 percentile(50,100)*scale,
+                percentile(99,100)*scale,
                 percentile(999,1000)*scale,
                 percentile(100,100)*scale
             );
