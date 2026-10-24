@@ -6,6 +6,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_executable(llsys main.cpp)
-target_compile_features(llsys PRIVATE cxx_std_20)
-target_compile_options(llsys PRIVATE -march=native -Wall -Wextra)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-march=native -Wall -Wextra)
+
+find_package(Threads REQUIRED)
+
+add_executable(Ashllsys main.cpp)
+
+add_executable(queue_test queue_test.cpp)
+target_link_libraries(queue_test PRIVATE Threads::Threads)
