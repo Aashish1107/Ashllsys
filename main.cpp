@@ -9,7 +9,7 @@
 #include "tsc.h"
 
 int main() {
-
+    //Histogram 1000 samples
     std::vector<std::uint64_t> values(1000);
     std::iota(values.begin(), values.end(), 1);
     std::shuffle(values.begin(), values.end(), std::mt19937{42});
@@ -21,7 +21,7 @@ int main() {
         std::puts("histogram self-check FAILED");
         return 1;
     }
-
+    //timestamp counter checking
     const double ns_per_tick = calibrate_ns_per_tick();
     std::printf("ns per tick: %.6f (TSC %.3f GHz)\n", ns_per_tick, 1.0 / ns_per_tick);
 
@@ -31,4 +31,25 @@ int main() {
         auto t1 = rdtsc();
         std::printf("sleep %3d ms -> measured %.3f ms\n", ms, (t1 - t0) * ns_per_tick / 1e6);
     }
+
+    //cost of one timer read
+    constexpr int N = 1'000'000;
+    constexpr int WARMUP = 10'000;
+
+    Histogram tsc_h(N);
+    for(int i=0; i<WARMUP+N;++i){
+        auto a = rdtsc();
+        auto b = rdtsc();
+        if(i>=WARMUP) tsc_h.record(b-a);
+    }
+    tsc_h.print("rdtsc (ns)", ns_per_tick);
+
+    Histogram clk_h(N);
+    for(int i=0;i<WARMUP+N; ++i){
+        auto a = std::chrono::steady_clock::now();
+        auto b = std::chrono::steady_clock::now();
+        if(i>=WARMUP)
+            clk_h.record(std::chrono::duration_cast<std::chrono::nanoseconds>(b-a).count());
+    }
+    clk_h.print("steady_clock (ns)");
 }
