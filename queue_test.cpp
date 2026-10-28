@@ -1,7 +1,9 @@
 #include <cstdint>
 #include <cstdio>
 #include <thread>
+#include <cstdlib>
 #include "mutex_queue.h"
+#include "spsc_queue.h"
 
 template <class Queue>
 bool check_order(Queue& q, std::uint64_t n) {
@@ -22,10 +24,15 @@ bool check_order(Queue& q, std::uint64_t n) {
     return mismatches == 0 && !q.try_pop(extra);   // nothing left over
 }
 
-int main() {
-    constexpr std::uint64_t N = 100'000'000;
+int main(int argc, char** argv) {
+    const std::uint64_t n = argc>1 ? std::strtoull(argv[1], nullptr, 10) :100'000'000;
     MutexQueue<std::uint64_t> q(1024);
-    bool ok = check_order(q, N);
-    std::printf("mutex queue: %s\n", ok ? "PASS" : "FAIL");
-    return ok ? 0 : 1;
+    bool mutex_ok = check_order(q, n);
+    std::printf("mutex queue: %s\n", mutex_ok ? "PASS" : "FAIL");
+
+    spscQueue<std::uint64_t, 1024>sq;
+    const bool spsc_ok = check_order(sq, n);
+    std::printf("spsc queue: %s\n", spsc_ok ? "PASS" : "FAIL");
+
+    return mutex_ok && spsc_ok ? 0 : 1 ;
 }
